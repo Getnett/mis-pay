@@ -13,22 +13,28 @@ import { NasaNEO } from "./types/nasaNEO";
 import CustomLegend from "./components/CustomLegend";
 import { ILegend } from "./types/legend";
 import { apiConfig } from "./config/apiConfig";
-import { DB } from "./db";
 import "./App.css";
-
-// import { DB } from "./db";
 
 function App() {
   const [nasaNEOData, setNasaNEOData] = useState<NasaNEO[]>([]);
+  const [selectedOrbitalBody, setSelectedOrbitalBody] = useState("");
   const [loading, setLoading] = useState(false);
+  const filteredNasaNEOData = nasaNEOData.filter((item) =>
+    selectedOrbitalBody
+      ? item.orbitingBody.toLowerCase() === selectedOrbitalBody.toLowerCase()
+      : item
+  );
 
+  const handleSelectedOrbitalBody = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setSelectedOrbitalBody(e.target.value);
+  };
   useEffect(() => {
     async function fetchNasaNEOData() {
       try {
         const res = await fetch(apiConfig.nasaNeoAPI);
         const data = await res.json();
-
-        // const data = DB; // maximum api hit reached use local data
         const nasaNEOFetchedData = data.near_earth_objects.map((neo: any) => ({
           name: neo.name,
           estimatedDiameterMin:
@@ -60,10 +66,29 @@ function App() {
   }
   return (
     <>
+      <div className="mb-6">
+        <label htmlFor="orbiting-body" style={{ marginRight: "10px" }}>
+          Orbiting Body:
+        </label>
+        <select
+          id="orbiting-body"
+          value={selectedOrbitalBody}
+          onChange={handleSelectedOrbitalBody}
+        >
+          <option value="">All</option>
+          {[...new Set(nasaNEOData.map((neo) => neo.orbitingBody))]?.map(
+            (orbitalBody) => (
+              <option key={orbitalBody} value={orbitalBody}>
+                {orbitalBody}
+              </option>
+            )
+          )}
+        </select>
+      </div>
       <BarChart
         width={600}
         height={500}
-        data={nasaNEOData}
+        data={filteredNasaNEOData}
         layout="vertical"
         margin={{
           top: 5,
