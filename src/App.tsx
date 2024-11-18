@@ -1,19 +1,9 @@
 import { useEffect, useState } from "react";
-import {
-  BarChart,
-  Bar,
-  Rectangle,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from "recharts";
+import DisplayChart from "./components/DisplayChart";
 import { NasaNEO } from "./types/nasaNEO";
-import CustomLegend from "./components/CustomLegend";
-import { ILegend } from "./types/legend";
 import { apiConfig } from "./config/apiConfig";
 import "./App.css";
+import DropDown from "./components/DropDown";
 
 function App() {
   const [nasaNEOData, setNasaNEOData] = useState<NasaNEO[]>([]);
@@ -25,10 +15,8 @@ function App() {
       : item
   );
 
-  const handleSelectedOrbitalBody = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setSelectedOrbitalBody(e.target.value);
+  const handleSelectedOrbitalBody = (value: string) => {
+    setSelectedOrbitalBody(value);
   };
   useEffect(() => {
     async function fetchNasaNEOData() {
@@ -66,74 +54,12 @@ function App() {
   }
   return (
     <>
-      <div className="mb-6">
-        <label htmlFor="orbiting-body" style={{ marginRight: "10px" }}>
-          Orbiting Body:
-        </label>
-        <select
-          id="orbiting-body"
-          value={selectedOrbitalBody}
-          onChange={handleSelectedOrbitalBody}
-        >
-          <option value="">All</option>
-          {[...new Set(nasaNEOData.map((neo) => neo.orbitingBody))]?.map(
-            (orbitalBody) => (
-              <option key={orbitalBody} value={orbitalBody}>
-                {orbitalBody}
-              </option>
-            )
-          )}
-        </select>
-      </div>
-      <BarChart
-        width={600}
-        height={500}
-        data={filteredNasaNEOData}
-        layout="vertical"
-        margin={{
-          top: 5,
-          right: 30,
-          left: 20,
-          bottom: 5,
-        }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          type="number"
-          label={{
-            value: "Min Estimated Diameter(km)",
-            position: "bottom",
-            offset: -8,
-          }}
-        />
-        <YAxis
-          type="category"
-          dataKey="name"
-          label={{
-            value: "NEO name",
-            angle: -90,
-            position: "insideLeft",
-            offset: -15,
-          }}
-        />
-        <Tooltip />
-        <Legend
-          verticalAlign="top"
-          content={({ payload }) => (
-            <CustomLegend payload={payload as ILegend[]} />
-          )}
-        />
-        <Bar
-          dataKey="estimatedDiameterMin"
-          fill="#14389D"
-          activeBar={<Rectangle fill="#14389D" stroke="#14389D" />}
-        />
-        <Bar
-          dataKey="estimatedDiameterMax"
-          fill="#C70039"
-          activeBar={<Rectangle fill="#C70039" stroke="#C70039" />}
-        />
-      </BarChart>
+      <DropDown
+        options={nasaNEOData}
+        selectedOrbitalBody={selectedOrbitalBody}
+        setSelectedOrbitalBody={handleSelectedOrbitalBody}
+      />
+      <DisplayChart data={filteredNasaNEOData} />
     </>
   );
 }
